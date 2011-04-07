@@ -1,0 +1,152 @@
+############### README ###################
+#
+#Topics
+#-----------------------------------------
+#1.Set up
+#
+#2.How to use the Generator
+#  A. Using the Config File (Recommended)
+#  B. Using Command Line Parameters
+#
+#3.How to use the Receiver
+#  A. Using the Config File (Recommended)
+#  B. Using Command Line Parameters
+#
+#4. Using Generator and Receiver Together
+#
+#####1 SET UP ############################
+#
+# 1. Put all relevant traffic generation files into the same directory.
+#    Relevant Files:
+#	generator.cpp	generator.cfg	receiver.cpp	receiver.cfg
+#	streamInfo.cpp	streamInfo.h	packet.h	swapEndian.h
+#	packetInfo.h	packetInfo.cpp	logger.cpp	logger.h
+#	Makefile	rtgen_logstats.py
+#
+# 2. Run the command "make" to build executables.
+#
+#####2 HOW TO USE THE GENERATOR ###########
+#
+# 1. To generate packets to send use the command "./generator" followed 
+#    by either a configuration file or command line parameters. Both methods
+#    are explained below.
+#
+#	A. To use a configuration file use the enter the command:
+#		"./generator -f <name of configuration file>"
+#	   The default generator configuration file is generator.cfg
+#	   If a different configuration file is to be used make sure to follow
+#	   the semantics described in generator.cfg.
+#
+#	B. Though not recommended the generator can run using command line parameters.
+#	   The parameters for the generator are:
+#		FUNCTION		Command			DEFAULT VALUE	NOTES
+#		----------------------------------------------------------------------------------------------------------------------------------
+#		Destination address:    -a "<IP address>"   	None		Must be specified or error
+#		Destination port:	-p "<Port Number>"	9876		
+#		Configuration file:	-f "<Config File Name>"	None		If specified, will overwrite any other command line values
+#		Number of Packets:	-n < # >		100		Must be a number
+#		Payload Size:		-s < # >		160		Must be a number between 24 and 1524
+#		Interdeparture Time:	-t < # >		20		Must be a number between 1 and 29000. (Recomended between 0 and 250)
+#		Initial Buffer Size:	-b < # >		10		Must be a number that is less than the number of packets. Only used for
+#										RT packets (see next).
+#		Non-Real Time Packets:	-r < 0 > | < 1 >	0		Only value inputs are '0' or '1' as '0' makes the packets real-time and
+#										'1' makes the packets non-real-time.
+		Log File:		-l "<Log File Name>"	generator.log	A log file for streamstart and streamstop of the generator
+# 2. Examples.
+#	A. Valid use of config file:  			./generator -f generator.cfg
+#	B. Valid use of command line parameters:	./generator -a 10.10.0.2 -p 9876 -n 100 -s 1524 -t 40 -r 1 -l generator.log
+#
+#####3 HOW TO START THE RECEIVER #############
+#
+# 1. To receive packets use the command "./receiver" followed 
+#    by either a configuration file or command line parameters. Both methods
+#    are explained below.
+#
+#	A. To use a configuration file use the enter the command:
+#		"./receiver -f <name of configuration file>"
+#	   The default receiver configuration file is receiver.cfg
+#	   If a different configuration file is to be used make sure to follow
+#	   the semantics described in receiver.cfg.
+#
+#	B. Though not recommended the receiver can run using command line parameters.
+#	   The parameters for the receiver are:
+#		FUNCTION		Command			DEFAULT VALUE	NOTES
+#		----------------------------------------------------------------------------------------------------------------------------------
+#		Port to Bind To:	-p "<Port Number>"	9876		
+#		Configuration file:	-f "<Config File Name>"	None		If specified, will overwrite any other command line values
+#		Log File:		-l "<Log File Name>"	None		If no log file is specified the log will print to the console
+#										this is not recommended as it effects the efficiency of the 
+#										receiver and may cause unexpected errors.
+# 2. Examples.
+#	A. Valid use of config file:  			./receiver -f receiver.cfg
+#	B. Valid use of command line parameters:	./receiver -p 9876 -l logFile.txt
+#
+#####4 USING GENERATOR AND RECEIVER TOGETHER ##
+#
+#	To send and receive packets set up an ad-hoc network between computers and have one run receiver.cpp as explained above.
+#	Next set another computer in the ad-hoc network to generate a packet stream using the generator as explainedd above.
+#	To kill a receiver use Ctrl-C to kill it.
+#	Check the log file to make sure both the generator and receiver and generator are working correctly.
+#
+#####5 GATHERING STATS AFTER A SIMULATION ##
+#
+# 1. To generate a statistical spreadsheet of the previous simulations, gather
+#    the generator.log and receiver.log files into the same directory as the 
+#    rtgen_logstats.py script. Then type: 
+#
+#	"python rtgen_logstats.py *.log"
+#
+#	Note: the "*.log" portion of the command is usable with any type of file. 
+#	      "*.log" means that rtgen_logstats.py will operate on all .log files 
+#	      in the current directory. If one were to write, "python rtge_logstats.py
+#             *.txt", all of the .txt files would be operated on instead.	
+#
+#    The statistics will be put into a .csv file that has a default value of "rtgenstats.csv". 
+#    This can be changed in rtgen_logstats.py, but is not recommended. The python script will
+#    operate on both generator files and receiver files. 
+#
+#	The fields at the top of the spreadsheet are explained below:
+#
+#		id_src: This field is the ip address for receiver files and hostname for generator files without a receiver file
+#		id_dest: This file is the hostname for receiver files adn ip address for generator files without a receiver file
+#		idstreamid: This the unique stream id
+#		cnt_ontime: Number of packets ontime
+#		cnt_late: Number of packets late
+#		cnt_miss: Number of packets missed
+#		cnt_dup: Number of duplicate packets
+#		time_mean: Average of interarrival times (microseconds)
+#		time_med: Median of interarrival times (microseconds)
+#		time_stdev: Standard deviation of interarrival times (microseconds)
+#		time_max: Maximum interarrival time (microseconds)
+#		time_min: Minimum interarrival time (microseconds)
+#		strm_delta: Time between packets (milliseconds)
+#		strm_buffs: Initial packet buffer
+#		strm_count: Number of packets sent
+#		strm_psize: Packet size (bytes)
+#
+#	This is an example of what receiver stats will look like:
+#
+# 		id_src     id_dest   id_streamid  cnt_ontime  cnt_late  cnt_miss  cnt_dup  time_mean  time_med  time_stdev  time_max 
+# 		--------------------------------------------------------------------------------------------------------------------------	
+# 		ip address hostname  1237469830   100	      0         0      	  0        21999      22000     21.4        22130
+#		
+#		time_min strm_delta strm_buffs strm_count strm_psize
+#		----------------------------------------------------
+#		21870    20         10	       100        160
+#
+#	This is an example of what a generator file without a receiver will look like:
+#
+# 		id_src     id_dest     id_streamid  cnt_ontime  cnt_late  cnt_miss  cnt_dup  time_mean  time_med  time_stdev  time_max 
+# 		--------------------------------------------------------------------------------------------------------------------------	
+# 		hostname   ip address  1237469830   -1	        -1        -1        -1       -1         -1        -1          -1
+#
+#		time_min strm_delta strm_buffs strm_count strm_psize
+#		----------------------------------------------------
+#		-1    	 20         10	       100        160
+#
+#
+#   	As you can see the generator file without a receiver file has -1 for all timing and packet data. This is due to there being no
+#	packet or timing data for that stream. The receiver never picked up the stream and this system alerts the operator with the -1.
+#
+#
+########## END README ##########################
